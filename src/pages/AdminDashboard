@@ -1,0 +1,127 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import { MenuItem, CafeSettings } from "../entities";
+import { Card, CardHeader, CardTitle, CardContent } from "../components/ui";
+import { Button } from "../components/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui";
+import { ArrowRight, Coffee, Settings, Menu as MenuIcon, Store } from "lucide-react";
+
+import { MenuManagement, CafeSettingsManager, AdminStats } from "../components/admin";
+
+export default function AdminDashboardPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [cafeSettings, setCafeSettings] = useState({});
+  const [menuItems, setMenuItems] = useState([]);
+
+  useEffect(() => {
+    // Check if admin is logged in
+    const isLoggedIn = localStorage.getItem("adminLoggedIn");
+    if (!isLoggedIn) {
+      navigate(createPageUrl("AdminLogin"));
+      return;
+    }
+
+    loadData();
+  }, [navigate]);
+
+  const loadData = async () => {
+    try {
+      const [items, settings] = await Promise.all([
+        MenuItem.list("order_index"),
+        CafeSettings.list()
+      ]);
+
+      setMenuItems(items);
+      setCafeSettings(settings[0] || {
+        cafe_name: "کافه رست",
+        location: "اردبیل"
+      });
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminLoggedIn");
+    navigate(createPageUrl("Menu"));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Coffee className="w-8 h-8 text-green-600" />
+              پنل مدیریت کافه رست
+            </h1>
+            <p className="text-gray-600 mt-2">مدیریت منو و تنظیمات کافه</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate(createPageUrl("Menu"))}
+              className="flex items-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              بازگشت به منو
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              خروج
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Overview */}
+        <AdminStats menuItems={menuItems} />
+
+        {/* Main Content */}
+        <Tabs defaultValue="menu" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-2">
+            <TabsTrigger value="menu" className="flex items-center gap-2">
+              <MenuIcon className="w-4 h-4" />
+              مدیریت منو
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Store className="w-4 h-4" />
+              تنظیمات کافه
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="menu">
+            <MenuManagement 
+              menuItems={menuItems} 
+              setMenuItems={setMenuItems}
+              onDataChange={loadData}
+            />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <CafeSettingsManager 
+              cafeSettings={cafeSettings}
+              setCafeSettings={setCafeSettings}
+              onDataChange={loadData}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,178 @@
+
+import React, { useState, useEffect } from "react";
+import { MenuItem, CafeSettings } from "../entities";
+import { Link } from "react-router-dom";
+import { createPageUrl, formatPrice } from "../utils";
+import { Coffee, MapPin, Instagram, Phone, Settings, Star } from "lucide-react";
+import { Card, CardContent } from "../components/ui";
+import { Badge } from "../components/ui";
+import { Button } from "../components/ui";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { MenuItemCard, CategorySection, CafeHeader } from "../components/menu";
+
+const categories = [
+  { id: "coffee", name: "قهوه", emoji: "☕", color: "from-amber-400 to-orange-500" },
+  { id: "shake", name: "شیک", emoji: "🥤", color: "from-pink-400 to-rose-500" },
+  { id: "cold_bar", name: "بار سرد", emoji: "🧊", color: "from-sky-400 to-blue-500" },
+  { id: "hot_bar", name: "بار گرم", emoji: "🔥", color: "from-red-500 to-orange-500" },
+  { id: "tea", name: "چای", emoji: "🍃", color: "from-lime-400 to-green-500" },
+  { id: "cake", name: "کیک", emoji: "🍰", color: "from-fuchsia-500 to-pink-600" },
+  { id: "food", name: "غذا", emoji: "🍽️", color: "from-indigo-400 to-purple-500" },
+  { id: "breakfast", name: "صبحانه", emoji: "🌅", color: "from-yellow-400 to-amber-500" }
+];
+
+export default function MenuPage() {
+  const [menuItems, setMenuItems] = useState([]);
+  const [cafeSettings, setCafeSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const items = await MenuItem.filter({ is_available: true }, "order_index");
+      const settings = await CafeSettings.list();
+      
+      setMenuItems(items);
+      setCafeSettings(settings[0] || {
+        cafe_name: "کافه رست",
+        location: "اردبیل"
+      });
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+    setLoading(false);
+  };
+
+  const filteredItems = selectedCategory === "all" 
+    ? menuItems 
+    : menuItems.filter(item => item.category === selectedCategory);
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('fa-IR').format(price);
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900">
+      <CafeHeader cafeSettings={cafeSettings} />
+
+      {/* Category Filter */}
+      <div className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md border-b border-gray-700 px-4 py-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            <Button
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              onClick={() => setSelectedCategory("all")}
+              className={`whitespace-nowrap rounded-full px-4 ${selectedCategory === "all" 
+                ? "bg-teal-400 hover:bg-teal-500 text-gray-900 font-bold" 
+                : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"}`}
+            >
+              همه موارد
+            </Button>
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`whitespace-nowrap rounded-full px-4 flex items-center gap-2 ${selectedCategory === category.id 
+                  ? "bg-teal-400 hover:bg-teal-500 text-gray-900 font-bold" 
+                  : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"}`}
+              >
+                <span>{category.emoji}</span>
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Menu Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array(12).fill(0).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                <CardContent className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : selectedCategory === "all" ? (
+          <div className="space-y-16">
+            {categories.map((category) => {
+              const categoryItems = menuItems.filter(item => item.category === category.id);
+              if (categoryItems.length === 0) return null;
+              
+              return (
+                <CategorySection
+                  key={category.id}
+                  category={category}
+                  items={categoryItems}
+                  formatPrice={formatPrice}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
+          >
+            <AnimatePresence>
+              {filteredItems.map((item) => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  formatPrice={formatPrice}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {!loading && filteredItems.length === 0 && (
+          <div className="text-center py-16">
+            <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">موردی یافت نشد</h3>
+            <p className="text-gray-500">در این دسته‌بندی آیتمی موجود نیست</p>
+          </div>
+        )}
+      </div>
+
+      {/* Admin Access */}
+      <div className="fixed bottom-6 left-6 z-20">
+        <Link to={createPageUrl("AdminLogin")}>
+          <Button 
+            variant="default"
+            size="default"
+            className="bg-teal-400/90 backdrop-blur-sm hover:bg-teal-400 text-gray-900 font-bold shadow-lg shadow-teal-500/20"
+          >
+            <Settings className="w-5 h-5 ml-2" />
+            ورود مدیر
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+

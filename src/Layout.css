@@ -1,0 +1,51 @@
+:root {
+  --primary-green: #2dd4bf;
+  --primary-green-dark: #14b8a6;
+  --primary-green-light: #5eead4;
+  --bg-dark: #111827;
+  --bg-light: #1f2937;
+  --text-light: #f9fafb;
+  --text-muted: #9ca3af;
+  --accent-gold: #f59e0b;
+}
+
+body {
+  font-family: 'Vazirmatn', sans-serif;
+  background-color: var(--bg-dark);
+}
+
+@keyframes grain {
+  0%, 100% { transform:translate(0, 0) }
+  10% { transform:translate(-5%, -10%) }
+  20% { transform:translate(-15%, 5%) }
+  30% { transform:translate(7%, -25%) }
+  40% { transform:translate(-5%, 25%) }
+  50% { transform:translate(-15%, 10%) }
+  60% { transform:translate(15%, 0%) }
+  70% { transform:translate(0%, 15%) }
+  80% { transform:translate(3%, 35%) }
+  90% { transform:translate(-10%, 10%) }
+}
+
+.grain-overlay::after {
+  content: "";
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/5/5c/Image_gaussian_noise_example.png');
+  height: 300%;
+  width: 300%;
+  position: fixed;
+  top: -100%;
+  left: -100%;
+  animation: grain 8s steps(10) infinite;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 40px -15px rgba(0, 0, 0, 0.3);
+} 
