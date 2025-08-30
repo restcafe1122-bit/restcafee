@@ -207,19 +207,6 @@ export default function MenuPage() {
         )}
       </div>
 
-      {/* Admin Access */}
-      <div className="fixed bottom-6 left-6 z-20">
-        <Link to={createPageUrl("AdminLogin")}>
-          <Button 
-            variant="default"
-            size="default"
-            className="bg-teal-400/90 backdrop-blur-sm hover:bg-teal-400 text-gray-900 font-bold shadow-lg shadow-teal-500/20"
-          >
-            <Settings className="w-5 h-5 ml-2" />
-            ورود مدیر
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }
