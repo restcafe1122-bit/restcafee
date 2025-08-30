@@ -1,0 +1,8 @@
+{
+    "app":"rest",
+    "port":80,
+    "build":{
+    "location":"iran"
+    },
+    "disks":[]
+}
