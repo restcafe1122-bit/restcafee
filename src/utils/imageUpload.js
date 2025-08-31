@@ -1,25 +1,38 @@
-// Utility for handling image uploads to local storage
+// Utility for handling image uploads to local storage (Base64 method)
 export const uploadImageToLocal = async (file) => {
   try {
-    const formData = new FormData();
-    formData.append('image', file);
+    // Convert image to Base64
+    const base64 = await fileToBase64(file);
     
-    const response = await fetch('http://localhost:3001/api/upload-image', {
-      method: 'POST',
-      body: formData,
-    });
+    // Generate unique filename
+    const timestamp = Date.now();
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `menu-item-${timestamp}.${fileExtension}`;
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'خطا در آپلود تصویر');
-    }
+    // Store in localStorage with a unique key
+    const imageKey = `menu_image_${timestamp}`;
+    localStorage.setItem(imageKey, base64);
     
-    const result = await response.json();
-    return result;
+    return {
+      success: true,
+      path: base64, // Return Base64 data as path
+      fileName: fileName,
+      storageKey: imageKey
+    };
   } catch (error) {
     console.error('Error uploading image:', error);
     throw new Error('خطا در آپلود تصویر: ' + error.message);
   }
+};
+
+// Function to convert file to Base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
 };
 
 // Function to validate image file
@@ -31,9 +44,9 @@ export const validateImageFile = (file) => {
     errors.push('فایل انتخاب شده تصویر نیست');
   }
   
-  // Check file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    errors.push('حجم فایل نباید بیشتر از 5 مگابایت باشد');
+  // Check file size (max 2MB for Base64 storage)
+  if (file.size > 2 * 1024 * 1024) {
+    errors.push('حجم فایل نباید بیشتر از 2 مگابایت باشد');
   }
   
   // Check file extension
@@ -57,4 +70,45 @@ export const createImagePreview = (file) => {
     reader.onerror = (e) => reject(e);
     reader.readAsDataURL(file);
   });
+};
+
+// Function to get image from storage
+export const getImageFromStorage = (imagePath) => {
+  // If it's a Base64 string, return it directly
+  if (imagePath && imagePath.startsWith('data:image/')) {
+    return imagePath;
+  }
+  
+  // If it's a storage key, get from localStorage
+  if (imagePath && imagePath.startsWith('menu_image_')) {
+    return localStorage.getItem(imagePath);
+  }
+  
+  // If it's a URL, return it
+  if (imagePath && (imagePath.startsWith('http') || imagePath.startsWith('/'))) {
+    return imagePath;
+  }
+  
+  // Return default image
+  return '/sample-coffee.jpg';
+};
+
+// Function to clean up old images from localStorage
+export const cleanupOldImages = () => {
+  const keys = Object.keys(localStorage);
+  const imageKeys = keys.filter(key => key.startsWith('menu_image_'));
+  
+  // Keep only the last 50 images to prevent localStorage overflow
+  if (imageKeys.length > 50) {
+    const sortedKeys = imageKeys.sort((a, b) => {
+      const timestampA = parseInt(a.split('_')[2]);
+      const timestampB = parseInt(b.split('_')[2]);
+      return timestampB - timestampA;
+    });
+    
+    // Remove old images
+    sortedKeys.slice(50).forEach(key => {
+      localStorage.removeItem(key);
+    });
+  }
 }; 

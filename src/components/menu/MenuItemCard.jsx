@@ -4,6 +4,7 @@ import { Card, CardContent } from "../ui";
 import { Badge } from "../ui";
 import { Star, Coffee } from "lucide-react";
 import { motion } from "framer-motion";
+import { getImageFromStorage } from "../../utils";
 
 export default function MenuItemCard({ item, formatPrice }) {
   // Ensure formatPrice is available
@@ -23,11 +24,11 @@ export default function MenuItemCard({ item, formatPrice }) {
         {/* Image */}
         <div className="relative h-56 overflow-hidden">
           <img
-            src={item.image_url || `https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center`}
+            src={getImageFromStorage(item.image_url)}
             alt={item.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             onError={(e) => {
-              e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center";
+              e.target.src = "/sample-coffee.jpg";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>

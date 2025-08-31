@@ -163,4 +163,10 @@ export const getImageUrl = (url) => {
 };
 
 // Export image upload utilities
-export { uploadImageToLocal, validateImageFile, createImagePreview } from './imageUpload'; 
+export { 
+  uploadImageToLocal, 
+  validateImageFile, 
+  createImagePreview, 
+  getImageFromStorage, 
+  cleanupOldImages 
+} from './imageUpload'; 

@@ -6,7 +6,7 @@ import { Input } from "../ui";
 import { Label, Select, SelectItem, Switch } from "../ui";
 import { Alert, AlertDescription, AlertTitle } from "../ui";
 import { Plus, Edit, Trash2, Image, Save, X, Coffee, Upload, Eye } from "lucide-react";
-import { uploadImageToLocal, validateImageFile, createImagePreview } from "../../utils";
+import { uploadImageToLocal, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
 
 const categories = [
   { id: "coffee", name: "قهوه" },
@@ -62,16 +62,7 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
     }
   };
 
-  // Function to save image to local storage
-  const saveImageLocally = async (file) => {
-    try {
-      const result = await uploadImageToLocal(file);
-      return result.path;
-    } catch (error) {
-      console.error("Error saving image:", error);
-      throw new Error("خطا در ذخیره تصویر");
-    }
-  };
+
 
   // Function to clear image selection
   const clearImageSelection = () => {
@@ -171,7 +162,10 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
       
       // Only save image if one is selected
       if (selectedImage) {
-        imageUrl = await saveImageLocally(selectedImage);
+        const result = await uploadImageToLocal(selectedImage);
+        imageUrl = result.storageKey; // Use storage key instead of path
+        // Clean up old images to prevent localStorage overflow
+        cleanupOldImages();
       }
       
       let savedItem;
@@ -388,11 +382,11 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
                   {(imagePreview || formData.image_url) && (
                     <div className="relative">
                       <img
-                        src={imagePreview || formData.image_url}
+                        src={imagePreview || getImageFromStorage(formData.image_url)}
                         alt="Preview"
                         className="w-full h-32 object-cover rounded-lg border"
                         onError={(e) => {
-                          e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center";
+                          e.target.src = "/sample-coffee.jpg";
                         }}
                       />
                       {selectedImage && (
@@ -417,8 +411,8 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
                       </div>
                       <p>📸 برای اضافه کردن تصویر، روی دکمه "انتخاب تصویر" کلیک کنید</p>
                       <p className="mt-1">✅ فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
-                      <p className="mt-1">📏 حداکثر اندازه: 5 مگابایت</p>
-                      <p className="mt-1 text-blue-600">💡 تصویر اختیاری است و می‌توانید بدون تصویر هم آیتم را ذخیره کنید</p>
+                      <p className="mt-1">📏 حداکثر اندازه: 2 مگابایت</p>
+                      <p className="mt-1 text-blue-600">💡 تصویر اختیاری است و در مرورگر ذخیره می‌شود</p>
                     </div>
                   )}
                 </div>
@@ -476,11 +470,11 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
           <Card key={item.id} className="relative">
             <div className="h-48 overflow-hidden rounded-t-lg">
               <img
-                src={item.image_url || "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center"}
+                src={getImageFromStorage(item.image_url)}
                 alt={item.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center";
+                  e.target.src = "/sample-coffee.jpg";
                 }}
               />
             </div>
