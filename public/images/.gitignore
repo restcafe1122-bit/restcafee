@@ -1,0 +1,6 @@
+# Ignore uploaded images in git
+# Keep only sample images and documentation
+*
+!sample-*
+!.gitignore
+!README.md 

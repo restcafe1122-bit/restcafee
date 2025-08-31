@@ -160,4 +160,7 @@ export const getImageUrl = (url) => {
   if (!url) return '/placeholder-food.jpg';
   if (url.startsWith('http')) return url;
   return url;
-}; 
+};
+
+// Export image upload utilities
+export { uploadImageToLocal, validateImageFile, createImagePreview } from './imageUpload'; 

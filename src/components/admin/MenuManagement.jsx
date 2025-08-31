@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { MenuItem } from "../../entities";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui";
 import { Button } from "../ui";
 import { Input } from "../ui";
 import { Label, Select, SelectItem, Switch } from "../ui";
 import { Alert, AlertDescription, AlertTitle } from "../ui";
-import { Plus, Edit, Trash2, Image, Save, X, Coffee } from "lucide-react";
+import { Plus, Edit, Trash2, Image, Save, X, Coffee, Upload, Eye } from "lucide-react";
+import { uploadImageToLocal, validateImageFile, createImagePreview } from "../../utils";
 
 const categories = [
   { id: "coffee", name: "قهوه" },
@@ -33,6 +34,55 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Function to handle image file selection
+  const handleImageSelect = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file using utility function
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        setError(validation.errors.join(', '));
+        return;
+      }
+
+      setSelectedImage(file);
+      setError("");
+      
+      // Create preview using utility function
+      try {
+        const preview = await createImagePreview(file);
+        setImagePreview(preview);
+      } catch (error) {
+        setError("خطا در ایجاد پیش‌نمایش تصویر");
+      }
+    }
+  };
+
+  // Function to save image to local storage
+  const saveImageLocally = async (file) => {
+    try {
+      const result = await uploadImageToLocal(file);
+      return result.path;
+    } catch (error) {
+      console.error("Error saving image:", error);
+      throw new Error("خطا در ذخیره تصویر");
+    }
+  };
+
+  // Function to clear image selection
+  const clearImageSelection = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    // Clear image_url from form data
+    setFormData(prev => ({ ...prev, image_url: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleEdit = (item) => {
     setEditingItem(item);
@@ -46,6 +96,9 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
       is_available: item.is_available ?? true,
       order_index: item.order_index || 0
     });
+    setSelectedImage(null);
+    // Show existing image as preview if available
+    setImagePreview(item.image_url || null);
     setError("");
   };
 
@@ -75,6 +128,8 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
     };
     
     setFormData(newFormData);
+    setSelectedImage(null);
+    setImagePreview(null);
     setError("");
     
     console.log("New form data set:", newFormData);
@@ -112,12 +167,23 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
     setError("");
 
     try {
+      let imageUrl = "";
+      
+      // Only save image if one is selected
+      if (selectedImage) {
+        imageUrl = await saveImageLocally(selectedImage);
+      }
+      
       let savedItem;
       
       if (editingItem) {
         console.log("Updating existing item...");
         // Update existing item
-        savedItem = await MenuItem.update(editingItem.id, formData);
+        const updateData = {
+          ...formData,
+          image_url: selectedImage ? imageUrl : formData.image_url
+        };
+        savedItem = await MenuItem.update(editingItem.id, updateData);
         console.log("Updated item:", savedItem);
         
         // Update local state
@@ -137,7 +203,7 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
           price: parseInt(formData.price) || 0,
           price_premium: formData.has_dual_pricing ? (parseInt(formData.price_premium) || 0) : null,
           has_dual_pricing: formData.has_dual_pricing,
-          image_url: formData.image_url.trim(),
+          image_url: imageUrl,
           is_available: formData.is_available,
           order_index: formData.order_index
         };
@@ -210,6 +276,8 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
     };
     
     setFormData(resetFormData);
+    setSelectedImage(null);
+    setImagePreview(null);
     setError("");
     
     console.log("Form reset to:", resetFormData);
@@ -283,13 +351,77 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
               </div>
 
               <div>
-                <Label htmlFor="image_url">آدرس تصویر</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="URL تصویر را وارد کنید"
-                />
+                <Label htmlFor="image">تصویر آیتم (اختیاری)</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      انتخاب تصویر
+                    </Button>
+                    {(selectedImage || imagePreview) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={clearImageSelection}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        {selectedImage ? "حذف" : "حذف تصویر موجود"}
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  
+                  {/* Image Preview */}
+                  {(imagePreview || formData.image_url) && (
+                    <div className="relative">
+                      <img
+                        src={imagePreview || formData.image_url}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=300&fit=crop&crop=center";
+                        }}
+                      />
+                      {selectedImage && (
+                        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                          تصویر جدید
+                        </div>
+                      )}
+                      {!selectedImage && imagePreview && (
+                        <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs">
+                          تصویر موجود
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Note about image upload */}
+                  {!selectedImage && !imagePreview && (
+                    <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Image className="w-4 h-4" />
+                        <span className="font-medium">راهنمای آپلود تصویر</span>
+                      </div>
+                      <p>📸 برای اضافه کردن تصویر، روی دکمه "انتخاب تصویر" کلیک کنید</p>
+                      <p className="mt-1">✅ فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
+                      <p className="mt-1">📏 حداکثر اندازه: 5 مگابایت</p>
+                      <p className="mt-1 text-blue-600">💡 تصویر اختیاری است و می‌توانید بدون تصویر هم آیتم را ذخیره کنید</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
