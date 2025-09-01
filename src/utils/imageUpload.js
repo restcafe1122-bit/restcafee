@@ -1,5 +1,5 @@
 // Utility for handling image uploads to local storage (Base64 method)
-export const uploadImageToLocal = async (file) => {
+export const uploadImageToLocal = async (file, type = 'menu') => {
   try {
     // Convert image to Base64
     const base64 = await fileToBase64(file);
@@ -7,10 +7,10 @@ export const uploadImageToLocal = async (file) => {
     // Generate unique filename
     const timestamp = Date.now();
     const fileExtension = file.name.split('.').pop();
-    const fileName = `menu-item-${timestamp}.${fileExtension}`;
+    const fileName = `${type}-${timestamp}.${fileExtension}`;
     
     // Store in localStorage with a unique key
-    const imageKey = `menu_image_${timestamp}`;
+    const imageKey = `${type}_image_${timestamp}`;
     localStorage.setItem(imageKey, base64);
     
     return {
@@ -80,7 +80,7 @@ export const getImageFromStorage = (imagePath) => {
   }
   
   // If it's a storage key, get from localStorage
-  if (imagePath && imagePath.startsWith('menu_image_')) {
+  if (imagePath && (imagePath.startsWith('menu_image_') || imagePath.startsWith('cafe_image_'))) {
     return localStorage.getItem(imagePath);
   }
   
@@ -96,7 +96,7 @@ export const getImageFromStorage = (imagePath) => {
 // Function to clean up old images from localStorage
 export const cleanupOldImages = () => {
   const keys = Object.keys(localStorage);
-  const imageKeys = keys.filter(key => key.startsWith('menu_image_'));
+  const imageKeys = keys.filter(key => key.startsWith('menu_image_') || key.startsWith('cafe_image_'));
   
   // Keep only the last 50 images to prevent localStorage overflow
   if (imageKeys.length > 50) {

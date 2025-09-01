@@ -28,13 +28,13 @@ export default function CategorySection({ category, items, formatPrice }) {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {/* Category Header */}
-      <div className="mb-8 flex items-center gap-4">
-        <span className={`text-4xl p-3 rounded-2xl bg-gradient-to-br ${category.color}`}>{category.emoji}</span>
+      <div className="mb-6 md:mb-8 flex items-center gap-3 md:gap-4">
+        <span className={`text-3xl md:text-4xl p-2 md:p-3 rounded-2xl bg-gradient-to-br ${category.color}`}>{category.emoji}</span>
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">{category.name}</h2>
-          <p className="text-gray-400">{items.length} مورد</p>
-          {category === "coffee" && (
-            <div className="mt-2 text-sm text-teal-300">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{category.name}</h2>
+          <p className="text-gray-400 text-sm md:text-base">{items.length} مورد</p>
+          {category.id === "coffee" && (
+            <div className="mt-2 text-xs md:text-sm text-teal-300">
               ☕ قهوه‌های عربیکا با دو نوع قیمت (عادی و پریمیوم)
             </div>
           )}
@@ -47,7 +47,7 @@ export default function CategorySection({ category, items, formatPrice }) {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8"
       >
         {items.map((item) => (
           <MenuItemCard

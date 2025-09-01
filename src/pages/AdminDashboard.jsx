@@ -221,59 +221,63 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Coffee className="w-8 h-8 text-green-600" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <Coffee className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
               پنل مدیریت کافه رست
             </h1>
-            <p className="text-gray-600 mt-2">مدیریت منو و تنظیمات کافه</p>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">مدیریت منو و تنظیمات کافه</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
             <Button 
               onClick={loadData} 
               variant="outline"
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 text-xs sm:text-sm"
             >
-              <RefreshCw className="w-4 h-4 ml-2" />
-              بارگذاری مجدد
+              <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">بارگذاری مجدد</span>
+              <span className="sm:hidden">بارگذاری</span>
             </Button>
             
             <Button
               onClick={handleForceReseed}
               variant="outline"
-              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 text-xs sm:text-sm"
             >
-              <RefreshCw className="w-4 h-4 ml-2" />
-              به‌روزرسانی نام‌ها
+              <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">به‌روزرسانی نام‌ها</span>
+              <span className="sm:hidden">به‌روزرسانی</span>
             </Button>
             
             <Button
               onClick={handleClearData}
               variant="outline"
-              className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200"
+              className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 text-xs sm:text-sm"
             >
-              <Trash2 className="w-4 h-4 ml-2" />
-              پاک کردن داده‌ها
+              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">پاک کردن داده‌ها</span>
+              <span className="sm:hidden">پاک کردن</span>
             </Button>
             
             <Button
               variant="outline"
               onClick={() => navigate(createPageUrl("Menu"))}
-              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200 text-xs sm:text-sm"
             >
-              <ArrowRight className="w-4 h-4 ml-2" />
-              بازگشت به منو
+              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">بازگشت به منو</span>
+              <span className="sm:hidden">منو</span>
             </Button>
             
             <Button
               variant="destructive"
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-xs sm:text-sm"
             >
               خروج
             </Button>
@@ -284,15 +288,17 @@ export default function AdminDashboardPage() {
         <AdminStats menuItems={menuItems} />
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 md:space-y-6">
           <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-2">
-            <TabsTrigger value="menu" className="flex items-center gap-2">
-              <MenuIcon className="w-4 h-4" />
-              مدیریت منو
+            <TabsTrigger value="menu" className="flex items-center gap-1 md:gap-2 text-sm md:text-base">
+              <MenuIcon className="w-3 h-3 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">مدیریت منو</span>
+              <span className="sm:hidden">منو</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Store className="w-4 h-4" />
-              تنظیمات کافه
+            <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 text-sm md:text-base">
+              <Store className="w-3 h-3 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">تنظیمات کافه</span>
+              <span className="sm:hidden">تنظیمات</span>
             </TabsTrigger>
           </TabsList>
 

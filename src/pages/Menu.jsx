@@ -120,13 +120,13 @@ export default function MenuPage() {
       <CafeHeader cafeSettings={cafeSettings} />
 
       {/* Category Filter */}
-      <div className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md border-b border-gray-700 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-md border-b border-gray-700 px-2 py-3 md:px-4 md:py-4">
         <div className="max-w-6xl mx-auto">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide">
             <Button
               variant={selectedCategory === "all" ? "default" : "outline"}
               onClick={() => setSelectedCategory("all")}
-              className={`whitespace-nowrap rounded-full px-4 ${selectedCategory === "all" 
+              className={`whitespace-nowrap rounded-full px-3 md:px-4 text-sm md:text-base ${selectedCategory === "all" 
                 ? "bg-teal-400 hover:bg-teal-500 text-gray-900 font-bold" 
                 : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"}`}
             >
@@ -137,12 +137,13 @@ export default function MenuPage() {
                 key={category.id}
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`whitespace-nowrap rounded-full px-4 flex items-center gap-2 ${selectedCategory === category.id 
+                className={`whitespace-nowrap rounded-full px-3 md:px-4 text-sm md:text-base flex items-center gap-1 md:gap-2 ${selectedCategory === category.id 
                   ? "bg-teal-400 hover:bg-teal-500 text-gray-900 font-bold" 
                   : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"}`}
               >
-                <span>{category.emoji}</span>
-                {category.name}
+                <span className="text-sm md:text-base">{category.emoji}</span>
+                <span className="hidden sm:inline">{category.name}</span>
+                <span className="sm:hidden">{category.name.length > 3 ? category.name.substring(0, 3) : category.name}</span>
               </Button>
             ))}
           </div>
@@ -150,9 +151,9 @@ export default function MenuPage() {
       </div>
 
       {/* Menu Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
+      <div className="max-w-7xl mx-auto px-2 py-4 md:px-6 md:py-12">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {Array(12).fill(0).map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <div className="h-48 bg-gray-200 rounded-t-lg"></div>
@@ -164,7 +165,7 @@ export default function MenuPage() {
             ))}
           </div>
         ) : selectedCategory === "all" ? (
-          <div className="space-y-16">
+          <div className="space-y-12 md:space-y-16">
             {categories.map((category) => {
               const categoryItems = menuItems.filter(item => item.category === category.id);
               if (categoryItems.length === 0) return null;
@@ -184,7 +185,7 @@ export default function MenuPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8"
           >
             <AnimatePresence>
               {filteredItems.map((item) => (
@@ -199,7 +200,7 @@ export default function MenuPage() {
         )}
 
         {!loading && filteredItems.length === 0 && (
-          <div className="text-center py-16">
+          <div className="text-center py-12 md:py-16">
             <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">موردی یافت نشد</h3>
             <p className="text-gray-500">در این دسته‌بندی آیتمی موجود نیست</p>

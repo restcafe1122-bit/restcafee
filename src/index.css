@@ -29,6 +29,27 @@
   .text-gradient {
     @apply bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent;
   }
+  
+  /* Mobile-first responsive utilities */
+  .mobile-container {
+    @apply px-2 sm:px-4 md:px-6 lg:px-8;
+  }
+  
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8;
+  }
+  
+  .mobile-text {
+    @apply text-sm sm:text-base md:text-lg lg:text-xl;
+  }
+  
+  .mobile-heading {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+  }
+  
+  .mobile-spacing {
+    @apply space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-12;
+  }
 }
 
 @layer utilities {
@@ -45,5 +66,28 @@
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Mobile-specific utilities */
+  .mobile-padding {
+    @apply p-3 sm:p-4 md:p-5 lg:p-6;
+  }
+  
+  .mobile-margin {
+    @apply m-2 sm:m-3 md:m-4 lg:m-6;
+  }
+  
+  .mobile-gap {
+    @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6;
+  }
+  
+  /* Ensure touch-friendly button sizes on mobile */
+  .touch-friendly {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile image optimization */
+  .mobile-image {
+    @apply w-full h-auto object-cover;
   }
 } 
