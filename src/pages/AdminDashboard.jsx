@@ -169,48 +169,7 @@ export default function AdminDashboardPage() {
     navigate(createPageUrl("Menu"));
   };
 
-  const handleClearData = async () => {
-    if (window.confirm("آیا مطمئن هستید که می‌خواهید همه داده‌ها را پاک کنید؟ این کار قابل بازگشت نیست.")) {
-      try {
-        console.log("Clearing all data...");
-        
-        // Clear localStorage data
-        localStorage.removeItem('menuItems');
-        localStorage.removeItem('cafeSettings');
-        
-        console.log("Data cleared, reloading...");
-        
-        // Reload data
-        await loadData();
-        
-        alert("داده‌ها پاک شدند و مجدداً بارگذاری شدند.");
-      } catch (error) {
-        console.error("Error clearing data:", error);
-        alert("خطا در پاک کردن داده‌ها");
-      }
-    }
-  };
 
-  const handleForceReseed = async () => {
-    if (window.confirm("آیا مطمئن هستید که می‌خواهید منو را با نام‌های به‌روزرسانی شده بارگذاری مجدد کنید؟")) {
-      try {
-        console.log("Force reseeding menu items...");
-        
-        // Force reseed menu items with updated names
-        await MenuItem.forceReseed();
-        
-        console.log("Menu items force reseeded, reloading...");
-        
-        // Reload data
-        await loadData();
-        
-        alert("منو با نام‌های به‌روزرسانی شده بارگذاری شد.");
-      } catch (error) {
-        console.error("Error force reseeding:", error);
-        alert("خطا در بارگذاری مجدد منو");
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -221,23 +180,23 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent flex items-center gap-2">
               <Coffee className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
               پنل مدیریت کافه رست
             </h1>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">مدیریت منو و تنظیمات کافه</p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4">
             <Button 
               onClick={loadData} 
               variant="outline"
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 text-xs sm:text-sm"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
               <span className="hidden sm:inline">بارگذاری مجدد</span>
@@ -245,29 +204,9 @@ export default function AdminDashboardPage() {
             </Button>
             
             <Button
-              onClick={handleForceReseed}
-              variant="outline"
-              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 text-xs sm:text-sm"
-            >
-              <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              <span className="hidden sm:inline">به‌روزرسانی نام‌ها</span>
-              <span className="sm:hidden">به‌روزرسانی</span>
-            </Button>
-            
-            <Button
-              onClick={handleClearData}
-              variant="outline"
-              className="bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 text-xs sm:text-sm"
-            >
-              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              <span className="hidden sm:inline">پاک کردن داده‌ها</span>
-              <span className="sm:hidden">پاک کردن</span>
-            </Button>
-            
-            <Button
               variant="outline"
               onClick={() => navigate(createPageUrl("Menu"))}
-              className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200 text-xs sm:text-sm"
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
               <span className="hidden sm:inline">بازگشت به منو</span>
@@ -277,7 +216,7 @@ export default function AdminDashboardPage() {
             <Button
               variant="destructive"
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-xs sm:text-sm"
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               خروج
             </Button>
@@ -289,13 +228,13 @@ export default function AdminDashboardPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 md:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-2">
-            <TabsTrigger value="menu" className="flex items-center gap-1 md:gap-2 text-sm md:text-base">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-2 bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-white/20">
+            <TabsTrigger value="menu" className="flex items-center gap-1 md:gap-2 text-sm md:text-base rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300">
               <MenuIcon className="w-3 h-3 md:w-4 md:h-4" />
               <span className="hidden sm:inline">مدیریت منو</span>
               <span className="sm:hidden">منو</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 text-sm md:text-base">
+            <TabsTrigger value="settings" className="flex items-center gap-1 md:gap-2 text-sm md:text-base rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300">
               <Store className="w-3 h-3 md:w-4 md:h-4" />
               <span className="hidden sm:inline">تنظیمات کافه</span>
               <span className="sm:hidden">تنظیمات</span>

@@ -411,7 +411,7 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
                       </div>
                       <p>📸 برای اضافه کردن تصویر، روی دکمه "انتخاب تصویر" کلیک کنید</p>
                       <p className="mt-1">✅ فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
-                      <p className="mt-1">📏 حداکثر اندازه: 2 مگابایت</p>
+                      <p className="mt-1">📏 حداکثر اندازه: 6 مگابایت</p>
                       <p className="mt-1 text-blue-600">💡 تصویر اختیاری است و در مرورگر ذخیره می‌شود</p>
                     </div>
                   )}

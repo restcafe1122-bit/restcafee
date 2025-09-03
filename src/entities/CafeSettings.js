@@ -56,7 +56,67 @@ export class CafeSettings {
   }
   
   static async save(settings) {
-    storage.set(this.STORAGE_KEY, settings);
+    try {
+      console.log("=== CafeSettings.save() START ===");
+      console.log("Settings to save:", settings);
+      
+      if (!Array.isArray(settings)) {
+        console.error("Settings is not an array:", settings);
+        throw new Error("Settings must be an array");
+      }
+      
+      // Validate settings
+      const validatedSettings = settings.map((setting, index) => {
+        if (!setting || typeof setting !== 'object') {
+          console.error(`Invalid setting at index ${index}:`, setting);
+          return null;
+        }
+        
+        if (!setting.id) {
+          console.warn("Setting missing ID:", setting);
+          setting.id = 'default';
+        }
+        
+        // Ensure all required fields exist
+        const validatedSetting = {
+          id: setting.id,
+          cafe_name: setting.cafe_name || 'کافه رست',
+          location: setting.location || 'اردبیل',
+          logo_url: setting.logo_url || '',
+          hero_image_url: setting.hero_image_url || '',
+          instagram_url: setting.instagram_url || '',
+          admin_username: setting.admin_username || 'admin',
+          admin_password: setting.admin_password || 'rest2024',
+          phone: setting.phone || '',
+          description: setting.description || 'کافه رست - بهترین قهوه و شیک در اردبیل',
+          created_at: setting.created_at || new Date().toISOString(),
+          updated_at: setting.updated_at || new Date().toISOString()
+        };
+        
+        console.log(`Validated setting ${index}:`, validatedSetting);
+        return validatedSetting;
+      }).filter(setting => setting !== null);
+      
+      console.log("Final validated settings:", validatedSettings);
+      
+      // Save to storage
+      await storage.set(this.STORAGE_KEY, validatedSettings);
+      
+      // Verify the save was successful
+      const savedSettings = await storage.get(this.STORAGE_KEY, []);
+      if (savedSettings.length === validatedSettings.length) {
+        console.log("Cafe settings saved and verified successfully");
+        console.log("=== CafeSettings.save() SUCCESS ===");
+      } else {
+        console.error("Save verification failed - settings count mismatch");
+        console.error("Expected:", validatedSettings.length, "Got:", savedSettings.length);
+        throw new Error("Save verification failed");
+      }
+    } catch (error) {
+      console.error("=== CafeSettings.save() ERROR ===");
+      console.error("Error details:", error);
+      throw error;
+    }
   }
   
   static async seed() {

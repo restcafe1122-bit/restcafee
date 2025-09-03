@@ -125,7 +125,7 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
   };
 
   // Function to handle password change
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     setPasswordError("");
     
     if (!newPassword.trim()) {
@@ -143,12 +143,28 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
       return;
     }
     
-    // Update form data with new password
-    setFormData(prev => ({ ...prev, admin_password: newPassword }));
-    setNewPassword("");
-    setConfirmPassword("");
-    setSuccess("رمز عبور با موفقیت تغییر یافت");
-    setTimeout(() => setSuccess(""), 3000);
+    try {
+      // Update form data with new password
+      const updatedFormData = { ...formData, admin_password: newPassword };
+      setFormData(updatedFormData);
+      
+      // Save the password change immediately
+      if (cafeSettings && cafeSettings.id) {
+        await CafeSettings.update(cafeSettings.id, { admin_password: newPassword });
+        // Update local state
+        if (setCafeSettings) {
+          setCafeSettings(prev => ({ ...prev, admin_password: newPassword }));
+        }
+      }
+      
+      setNewPassword("");
+      setConfirmPassword("");
+      setSuccess("رمز عبور با موفقیت تغییر یافت و ذخیره شد");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Error saving password:", error);
+      setPasswordError("خطا در ذخیره رمز عبور: " + error.message);
+    }
   };
 
   const handleSave = async () => {
@@ -365,7 +381,7 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
                         </div>
                         <p>📸 برای اضافه کردن لوگو، روی دکمه "انتخاب لوگو" کلیک کنید</p>
                         <p className="mt-1">✅ فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
-                        <p className="mt-1">📏 حداکثر اندازه: 2 مگابایت</p>
+                        <p className="mt-1">📏 حداکثر اندازه: 6 مگابایت</p>
                         <p className="mt-1 text-blue-600">💡 لوگو در مرورگر ذخیره می‌شود</p>
                       </div>
                     )}
@@ -437,7 +453,7 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
                         </div>
                         <p>📸 برای اضافه کردن تصویر اصلی، روی دکمه "انتخاب تصویر اصلی" کلیک کنید</p>
                         <p className="mt-1">✅ فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
-                        <p className="mt-1">📏 حداکثر اندازه: 2 مگابایت</p>
+                        <p className="mt-1">📏 حداکثر اندازه: 6 مگابایت</p>
                         <p className="mt-1 text-blue-600">💡 تصویر در مرورگر ذخیره می‌شود</p>
                       </div>
                     )}

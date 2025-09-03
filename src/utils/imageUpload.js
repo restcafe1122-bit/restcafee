@@ -44,9 +44,9 @@ export const validateImageFile = (file) => {
     errors.push('فایل انتخاب شده تصویر نیست');
   }
   
-  // Check file size (max 2MB for Base64 storage)
-  if (file.size > 2 * 1024 * 1024) {
-    errors.push('حجم فایل نباید بیشتر از 2 مگابایت باشد');
+  // Check file size (max 6MB for Base64 storage)
+  if (file.size > 6 * 1024 * 1024) {
+    errors.push('حجم فایل نباید بیشتر از 6 مگابایت باشد');
   }
   
   // Check file extension

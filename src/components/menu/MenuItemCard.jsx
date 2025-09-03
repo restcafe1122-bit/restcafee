@@ -48,13 +48,13 @@ export default function MenuItemCard({ item, formatPrice }) {
               {item.has_dual_pricing ? (
                 <div className="space-y-2 md:space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs md:text-sm text-gray-400">قیمت عادی</span>
+                    <span className="text-xs md:text-sm text-gray-400">لاین 50-50</span>
                     <span className="font-bold text-base md:text-lg text-teal-300">
                       {safeFormatPrice(item.price)} تومان
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs md:text-sm text-gray-400">قیمت پریمیوم</span>
+                    <span className="text-xs md:text-sm text-gray-400">80-20 عربیکا</span>
                     <span className="font-bold text-base md:text-lg text-teal-300">
                       {safeFormatPrice(item.price_premium || item.price)} تومان
                     </span>
