@@ -55,6 +55,8 @@ app.use('/images', (req, res, next) => {
   res.setHeader('Expires', '0');
   next();
 });
+// Alias uploads path to images for compatibility with clients expecting /uploads
+app.use('/uploads', express.static(path.join(__dirname, 'public/images')));
 app.use(express.static('public'));
 
 // Serve built frontend from dist (production)
@@ -249,6 +251,82 @@ app.post('/api/menu-items', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error creating menu item:', error);
     res.status(500).json({ error: 'Failed to create menu item' });
+  }
+});
+
+// --- Aliases for simplified API paths ---
+// GET /api/menu => list
+app.get('/api/menu', async (req, res) => {
+  try {
+    const items = await Database.getMenuItems();
+    res.json({ success: true, data: items });
+  } catch (error) {
+    console.error('Error fetching menu items (alias):', error);
+    res.status(500).json({ error: 'Failed to fetch menu items' });
+  }
+});
+
+// POST /api/menu => create (auth required)
+app.post('/api/menu', authenticateToken, async (req, res) => {
+  try {
+    const newItem = await Database.addMenuItem(req.body);
+    res.json({ success: true, data: newItem });
+  } catch (error) {
+    console.error('Error creating menu item (alias):', error);
+    res.status(500).json({ error: 'Failed to create menu item' });
+  }
+});
+
+// PUT /api/menu/:id => update (auth required)
+app.put('/api/menu/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedItem = await Database.updateMenuItem(id, req.body);
+    res.json({ success: true, data: updatedItem });
+  } catch (error) {
+    console.error('Error updating menu item (alias):', error);
+    if (error.message === 'Menu item not found') {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to update menu item' });
+    }
+  }
+});
+
+// DELETE /api/menu/:id => delete (auth required)
+app.delete('/api/menu/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Database.deleteMenuItem(id);
+    res.json({ success: true, message: 'Menu item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting menu item (alias):', error);
+    if (error.message === 'Menu item not found') {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to delete menu item' });
+    }
+  }
+});
+
+// POST /api/upload => alias of upload-image
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'هیچ فایلی آپلود نشده است' });
+    }
+
+    const imagePath = `/images/${req.file.filename}`;
+    res.json({
+      success: true,
+      path: imagePath,
+      fileName: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size
+    });
+  } catch (error) {
+    console.error('Upload error (alias):', error);
+    res.status(500).json({ error: 'خطا در آپلود فایل' });
   }
 });
 
