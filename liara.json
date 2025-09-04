@@ -1,8 +1,15 @@
 {
-    "app":"rest",
-    "port":3000,
-    "build":{
-        "location":"iran"
+  "platform": "node",
+  "app": "rest",
+  "port": 3000,
+  "disks": [
+    {
+      "name": "database",
+      "mountTo": "database/data"
     },
-    "disks":[]
+    {
+      "name": "images",
+      "mountTo": "public/images"
+    }
+  ]
 }

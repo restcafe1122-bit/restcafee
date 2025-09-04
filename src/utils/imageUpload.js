@@ -31,7 +31,7 @@ export const uploadImageToServer = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
 
-    const response = await fetch('/api/upload-image', {
+    const response = await fetch('/api/upload', {
       method: 'POST',
       body: formData
     });
@@ -43,9 +43,9 @@ export const uploadImageToServer = async (file) => {
 
     const result = await response.json();
     return {
-      success: !!result?.success,
-      path: result?.path,
-      fileName: result?.fileName,
+      success: true,
+      path: result?.path || result?.url,
+      fileName: result?.fileName || result?.filename,
       size: result?.size
     };
   } catch (error) {

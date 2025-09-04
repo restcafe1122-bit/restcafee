@@ -1,9 +1,12 @@
 import axios from 'axios';
 
 // API base URL
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' // same-origin in production
-  : 'http://localhost:3001/api';
+// Use VITE_API_BASE_URL if provided (for React-only deployments with external API host)
+const API_BASE_URL = (import.meta?.env && import.meta.env.VITE_API_BASE_URL)
+  ? import.meta.env.VITE_API_BASE_URL
+  : (process.env.NODE_ENV === 'production' 
+    ? '/api' // same-origin in production
+    : 'http://localhost:3001/api');
 
 // Create axios instance
 const api = axios.create({
@@ -85,8 +88,9 @@ export const authAPI = {
 export const menuAPI = {
   getAll: async () => {
     try {
-      const response = await api.get('/menu-items');
-      return response.data.data || [];
+      const response = await api.get('/menu');
+      // Alias support: if wrapped {data}, unwrap
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching menu items:', error);
       throw new Error(error.response?.data?.error || 'Failed to fetch menu items');
@@ -95,8 +99,8 @@ export const menuAPI = {
 
   create: async (itemData) => {
     try {
-      const response = await api.post('/menu-items', itemData);
-      return response.data.data;
+      const response = await api.post('/menu', itemData);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error creating menu item:', error);
       throw new Error(error.response?.data?.error || 'Failed to create menu item');
@@ -105,8 +109,8 @@ export const menuAPI = {
 
   update: async (id, itemData) => {
     try {
-      const response = await api.put(`/menu-items/${id}`, itemData);
-      return response.data.data;
+      const response = await api.put(`/menu/${id}`, itemData);
+      return response.data?.data || response.data;
     } catch (error) {
       console.error('Error updating menu item:', error);
       throw new Error(error.response?.data?.error || 'Failed to update menu item');
@@ -115,7 +119,7 @@ export const menuAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/menu-items/${id}`);
+      const response = await api.delete(`/menu/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting menu item:', error);
