@@ -46,7 +46,24 @@ export class Database {
 
   // Menu Items operations
   static async getMenuItems() {
-    return await this.readFile(MENU_ITEMS_FILE, []);
+    const items = await this.readFile(MENU_ITEMS_FILE, []);
+    let mutated = false;
+    const normalized = items.map(item => {
+      if (!item.id) {
+        mutated = true;
+        return {
+          id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+          ...item,
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      return item;
+    });
+    if (mutated) {
+      await this.saveMenuItems(normalized);
+    }
+    return normalized;
   }
 
   static async saveMenuItems(items) {
@@ -70,7 +87,19 @@ export class Database {
     const items = await this.getMenuItems();
     const index = items.findIndex(item => item.id === id);
     if (index === -1) {
-      throw new Error('Menu item not found');
+      // Fallback: try to find by name+category for legacy items without ids
+      const legacyIndex = items.findIndex(item => item.name === updates.name && item.category === (updates.category || item.category));
+      if (legacyIndex === -1) {
+        throw new Error('Menu item not found');
+      }
+      items[legacyIndex] = {
+        ...items[legacyIndex],
+        ...updates,
+        id: items[legacyIndex].id || Date.now().toString(36) + Math.random().toString(36).substr(2),
+        updated_at: new Date().toISOString()
+      };
+      await this.saveMenuItems(items);
+      return items[legacyIndex];
     }
     
     items[index] = {
@@ -143,8 +172,13 @@ export class Database {
       if (menuItems.length === 0) {
         console.log('Initializing default menu items...');
         const defaultMenuItems = await this.getDefaultMenuItems();
-        await this.saveMenuItems(defaultMenuItems);
+        // Ensure items have server-generated IDs
+        for (const item of defaultMenuItems) {
+          await this.addMenuItem(item);
+        }
       }
+      // Normalize existing items to ensure IDs exist
+      await this.getMenuItems();
 
       // Check if cafe settings exist
       const cafeSettings = await this.getCafeSettings();

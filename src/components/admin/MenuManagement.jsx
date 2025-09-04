@@ -6,7 +6,7 @@ import { Input } from "../ui";
 import { Label, Select, SelectItem, Switch } from "../ui";
 import { Alert, AlertDescription, AlertTitle } from "../ui";
 import { Plus, Edit, Trash2, Image, Save, X, Coffee, Upload, Eye } from "lucide-react";
-import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
+import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages, dataUrlToFile } from "../../utils";
 
 const categories = [
   { id: "coffee", name: "قهوه" },
@@ -182,10 +182,24 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
       if (editingItem) {
         console.log("Updating existing item...");
         // Update existing item
-        const updateData = {
-          ...formData,
-          image_url: selectedImage ? imageUrl : formData.image_url
-        };
+        const updateData = { ...formData };
+        // Migrate old Base64/localStorage images to server when editing without selecting new image
+        if (!selectedImage && formData.image_url) {
+          const maybeBase64 = getImageFromStorage(formData.image_url);
+          if (maybeBase64 && maybeBase64.startsWith('data:image/')) {
+            const file = dataUrlToFile(maybeBase64, `menu-${Date.now()}.png`);
+            if (file) {
+              try {
+                const serverResult = await uploadImageToServer(file);
+                if (serverResult?.path) {
+                  updateData.image_url = serverResult.path;
+                }
+              } catch {}
+            }
+          }
+        } else if (selectedImage) {
+          updateData.image_url = imageUrl;
+        }
         savedItem = await MenuItem.update(editingItem.id, updateData);
         console.log("Updated item:", savedItem);
         

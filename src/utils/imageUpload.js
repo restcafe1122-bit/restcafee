@@ -101,6 +101,25 @@ export const createImagePreview = (file) => {
   });
 };
 
+// Convert Base64 dataURL to File object
+export const dataUrlToFile = (dataUrl, fileName = `image-${Date.now()}.png`) => {
+  try {
+    if (!dataUrl || !dataUrl.startsWith('data:')) return null;
+    const arr = dataUrl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], fileName, { type: mime });
+  } catch (e) {
+    console.error('dataUrlToFile error:', e);
+    return null;
+  }
+};
 // Function to get image from storage
 export const getImageFromStorage = (imagePath) => {
   // If it's a Base64 string, return it directly

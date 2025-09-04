@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'cafe-rest-secret-key-2024';
 
 // Security middleware
@@ -56,6 +56,12 @@ app.use('/images', (req, res, next) => {
   next();
 });
 app.use(express.static('public'));
+
+// Serve built frontend from dist (production)
+const distDir = path.join(__dirname, 'dist');
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -354,6 +360,16 @@ app.put('/api/auth/password', authenticateToken, async (req, res) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// SPA fallback: serve index.html for non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  const indexPath = path.join(distDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return next();
 });
 
 app.listen(PORT, () => {

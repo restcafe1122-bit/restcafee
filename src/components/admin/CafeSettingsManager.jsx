@@ -7,7 +7,7 @@ import { Input } from "../ui";
 import { Label, Textarea } from "../ui";
 import { Alert, AlertDescription } from "../ui";
 import { Save, Instagram, MapPin, Phone, Image as ImageIcon, Upload, X, Eye, EyeOff, Lock } from "lucide-react";
-import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
+import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages, dataUrlToFile } from "../../utils";
 
 export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onDataChange }) {
   const [formData, setFormData] = useState({});
@@ -201,6 +201,37 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
           const result = await uploadImageToLocal(selectedHeroImage, 'cafe');
           updatedFormData.hero_image_url = result.storageKey;
           cleanupOldImages();
+        }
+      }
+
+      // Migrate existing Base64 images (if any) to server when no new file selected
+      if (!selectedLogo && updatedFormData.logo_url) {
+        const maybeBase64 = getImageFromStorage(updatedFormData.logo_url);
+        if (maybeBase64 && maybeBase64.startsWith('data:image/')) {
+          const file = dataUrlToFile(maybeBase64, `logo-${Date.now()}.png`);
+          if (file) {
+            try {
+              const serverResult = await uploadImageToServer(file);
+              if (serverResult?.path) {
+                updatedFormData.logo_url = serverResult.path;
+              }
+            } catch {}
+          }
+        }
+      }
+
+      if (!selectedHeroImage && updatedFormData.hero_image_url) {
+        const maybeBase64 = getImageFromStorage(updatedFormData.hero_image_url);
+        if (maybeBase64 && maybeBase64.startsWith('data:image/')) {
+          const file = dataUrlToFile(maybeBase64, `hero-${Date.now()}.png`);
+          if (file) {
+            try {
+              const serverResult = await uploadImageToServer(file);
+              if (serverResult?.path) {
+                updatedFormData.hero_image_url = serverResult.path;
+              }
+            } catch {}
+          }
         }
       }
       
