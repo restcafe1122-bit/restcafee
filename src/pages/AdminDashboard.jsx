@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { MenuItem, CafeSettings } from "../entities";
+import { authAPI } from "../services/api";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui";
 import { Button } from "../components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui";
@@ -17,15 +18,33 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("menu");
 
   useEffect(() => {
-    // Check if admin is logged in
-    const isLoggedIn = localStorage.getItem("adminLoggedIn");
-    if (!isLoggedIn) {
-      navigate(createPageUrl("AdminLogin"));
-      return;
-    }
-
-    loadData();
+    checkAuthAndLoadData();
   }, [navigate]);
+
+  const checkAuthAndLoadData = async () => {
+    try {
+      console.log("=== AdminDashboard.checkAuthAndLoadData() START ===");
+      
+      // Check if user is authenticated via API
+      const isAuthenticated = await authAPI.verifyToken();
+      
+      if (!isAuthenticated) {
+        console.log("User not authenticated, redirecting to login");
+        navigate(createPageUrl("AdminLogin"));
+        return;
+      }
+      
+      console.log("User authenticated, loading data...");
+      await loadData();
+      
+      console.log("=== AdminDashboard.checkAuthAndLoadData() SUCCESS ===");
+    } catch (error) {
+      console.error("=== AdminDashboard.checkAuthAndLoadData() ERROR ===");
+      console.error("Error details:", error);
+      // If token verification fails, redirect to login
+      navigate(createPageUrl("AdminLogin"));
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -164,9 +183,23 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminLoggedIn");
-    navigate(createPageUrl("Menu"));
+  const handleLogout = async () => {
+    try {
+      console.log("=== AdminDashboard.handleLogout() START ===");
+      
+      // Clear the auth token
+      localStorage.removeItem('authToken');
+      
+      console.log("Logged out successfully");
+      navigate(createPageUrl("Menu"));
+      
+      console.log("=== AdminDashboard.handleLogout() SUCCESS ===");
+    } catch (error) {
+      console.error("=== AdminDashboard.handleLogout() ERROR ===");
+      console.error("Error details:", error);
+      // Even if logout fails, redirect to menu
+      navigate(createPageUrl("Menu"));
+    }
   };
 
 

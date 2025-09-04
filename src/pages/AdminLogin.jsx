@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CafeSettings } from "../entities";
+import { authAPI } from "../services/api";
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui";
 import { Input } from "../components/ui";
 import { Button } from "../components/ui";
@@ -23,46 +23,31 @@ export default function AdminLoginPage() {
 
     try {
       console.log("=== AdminLogin.handleLogin() START ===");
+      console.log("Attempting login with username:", username);
       
-      const settings = await CafeSettings.list();
-      console.log("Loaded settings:", settings);
+      // Use API authentication
+      const response = await authAPI.login(username, password);
+      console.log("Login response:", response);
       
-      let cafeSettings = settings[0];
-
-      if (!cafeSettings) {
-        console.log("No settings found, creating default settings...");
-        // Create default settings if none exist
-        cafeSettings = await CafeSettings.create({
-          admin_username: "admin",
-          admin_password: "rest2024"
-        });
-        console.log("Created default settings:", cafeSettings);
-      }
-
-      const adminUsername = cafeSettings?.admin_username || "admin";
-      const adminPassword = cafeSettings?.admin_password || "rest2024";
-
-      console.log("Checking credentials...");
-      console.log("Input username:", username);
-      console.log("Input password:", password);
-      console.log("Expected username:", adminUsername);
-      console.log("Expected password:", adminPassword);
-
-      if (username === adminUsername && password === adminPassword) {
-        console.log("Login successful");
-        // Store admin session
-        localStorage.setItem("adminLoggedIn", "true");
+      if (response.token) {
+        console.log("Login successful, token received");
+        // Token is automatically stored by the API interceptor
         navigate(createPageUrl("AdminDashboard"));
       } else {
-        console.log("Login failed: invalid credentials");
-        setError("نام کاربری یا رمز عبور اشتباه است");
+        console.log("Login failed: no token received");
+        setError("خطا در ورود به سیستم");
       }
       
-      console.log("=== AdminLogin.handleLogin() END ===");
+      console.log("=== AdminLogin.handleLogin() SUCCESS ===");
     } catch (error) {
       console.error("=== AdminLogin.handleLogin() ERROR ===");
       console.error("Error details:", error);
-      setError("خطا در ورود به سیستم: " + error.message);
+      
+      if (error.response?.status === 401) {
+        setError("نام کاربری یا رمز عبور اشتباه است");
+      } else {
+        setError("خطا در ورود به سیستم: " + (error.message || "خطای ناشناخته"));
+      }
     }
     
     setLoading(false);

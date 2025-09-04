@@ -6,7 +6,7 @@ import { Input } from "../ui";
 import { Label, Select, SelectItem, Switch } from "../ui";
 import { Alert, AlertDescription, AlertTitle } from "../ui";
 import { Plus, Edit, Trash2, Image, Save, X, Coffee, Upload, Eye } from "lucide-react";
-import { uploadImageToLocal, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
+import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
 
 const categories = [
   { id: "coffee", name: "قهوه" },
@@ -162,10 +162,19 @@ export default function MenuManagement({ menuItems, setMenuItems, onDataChange }
       
       // Only save image if one is selected
       if (selectedImage) {
-        const result = await uploadImageToLocal(selectedImage);
-        imageUrl = result.storageKey; // Use storage key instead of path
-        // Clean up old images to prevent localStorage overflow
-        cleanupOldImages();
+        // Try server upload first for cross-device visibility; fallback to local
+        try {
+          const serverResult = await uploadImageToServer(selectedImage);
+          if (serverResult?.path) {
+            imageUrl = serverResult.path; // e.g., /images/filename.jpg
+          } else {
+            throw new Error('No path from server');
+          }
+        } catch (e) {
+          const localResult = await uploadImageToLocal(selectedImage);
+          imageUrl = localResult.storageKey;
+          cleanupOldImages();
+        }
       }
       
       let savedItem;

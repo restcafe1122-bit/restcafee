@@ -25,6 +25,35 @@ export const uploadImageToLocal = async (file, type = 'menu') => {
   }
 };
 
+// Upload image to server storage via REST API (preferred for multi-device)
+export const uploadImageToServer = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`Server responded with ${response.status}. ${errorBody}`);
+    }
+
+    const result = await response.json();
+    return {
+      success: !!result?.success,
+      path: result?.path,
+      fileName: result?.fileName,
+      size: result?.size
+    };
+  } catch (error) {
+    console.error('Error uploading image to server:', error);
+    throw new Error('خطا در آپلود تصویر روی سرور: ' + error.message);
+  }
+};
+
 // Function to convert file to Base64
 const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -84,7 +113,7 @@ export const getImageFromStorage = (imagePath) => {
     return localStorage.getItem(imagePath);
   }
   
-  // If it's a URL, return it
+  // If it's a URL (absolute or server path), return it
   if (imagePath && (imagePath.startsWith('http') || imagePath.startsWith('/'))) {
     return imagePath;
   }

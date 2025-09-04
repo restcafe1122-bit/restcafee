@@ -165,6 +165,7 @@ export const getImageUrl = (url) => {
 // Export image upload utilities
 export { 
   uploadImageToLocal, 
+  uploadImageToServer,
   validateImageFile, 
   createImagePreview, 
   getImageFromStorage, 

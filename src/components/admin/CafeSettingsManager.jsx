@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
 import { CafeSettings } from "../../entities";
+import { authAPI } from "../../services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui";
 import { Button } from "../ui";
 import { Input } from "../ui";
 import { Label, Textarea } from "../ui";
 import { Alert, AlertDescription } from "../ui";
 import { Save, Instagram, MapPin, Phone, Image as ImageIcon, Upload, X, Eye, EyeOff, Lock } from "lucide-react";
-import { uploadImageToLocal, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
+import { uploadImageToLocal, uploadImageToServer, validateImageFile, createImagePreview, getImageFromStorage, cleanupOldImages } from "../../utils";
 
 export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onDataChange }) {
   const [formData, setFormData] = useState({});
@@ -144,18 +145,12 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
     }
     
     try {
-      // Update form data with new password
-      const updatedFormData = { ...formData, admin_password: newPassword };
-      setFormData(updatedFormData);
+      // Update password via API (auth)
+      await authAPI.updatePassword(newPassword);
       
-      // Save the password change immediately
-      if (cafeSettings && cafeSettings.id) {
-        await CafeSettings.update(cafeSettings.id, { admin_password: newPassword });
-        // Update local state
-        if (setCafeSettings) {
-          setCafeSettings(prev => ({ ...prev, admin_password: newPassword }));
-        }
-      }
+      // Reflect locally in UI state (optional field show only)
+      const updatedFormData = { ...formData, admin_password: '' };
+      setFormData(updatedFormData);
       
       setNewPassword("");
       setConfirmPassword("");
@@ -179,16 +174,34 @@ export default function CafeSettingsManager({ cafeSettings, setCafeSettings, onD
       
       // Handle logo upload
       if (selectedLogo) {
-        const result = await uploadImageToLocal(selectedLogo, 'cafe');
-        updatedFormData.logo_url = result.storageKey;
-        cleanupOldImages();
+        try {
+          const serverResult = await uploadImageToServer(selectedLogo);
+          if (serverResult?.path) {
+            updatedFormData.logo_url = serverResult.path;
+          } else {
+            throw new Error('No path from server');
+          }
+        } catch (e) {
+          const result = await uploadImageToLocal(selectedLogo, 'cafe');
+          updatedFormData.logo_url = result.storageKey;
+          cleanupOldImages();
+        }
       }
       
       // Handle hero image upload
       if (selectedHeroImage) {
-        const result = await uploadImageToLocal(selectedHeroImage, 'cafe');
-        updatedFormData.hero_image_url = result.storageKey;
-        cleanupOldImages();
+        try {
+          const serverResult = await uploadImageToServer(selectedHeroImage);
+          if (serverResult?.path) {
+            updatedFormData.hero_image_url = serverResult.path;
+          } else {
+            throw new Error('No path from server');
+          }
+        } catch (e) {
+          const result = await uploadImageToLocal(selectedHeroImage, 'cafe');
+          updatedFormData.hero_image_url = result.storageKey;
+          cleanupOldImages();
+        }
       }
       
       let updatedSettings;
